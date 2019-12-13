@@ -46,4 +46,8 @@ public abstract class Tile {
 		}
 	}
 	
+	public boolean containsRect(Rectangle r){
+		return rect.intersects(r);
+	}
+	
 }
