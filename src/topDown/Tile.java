@@ -7,7 +7,7 @@ import java.awt.Rectangle;
 
 import javax.swing.ImageIcon;
 
-public abstract class Tile {
+public class Tile {
 	
 	protected ImageIcon image;
 	protected int gridX, gridY;
