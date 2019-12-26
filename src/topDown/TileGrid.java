@@ -1,6 +1,5 @@
 package topDown;
 
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -17,8 +16,6 @@ public class TileGrid implements Serializable{
 	Map<int[], Tile> grid;
 	int width, height;
 	int tileSize;
-	
-	transient BufferedImage map;
 	
 	public TileGrid(Window w){
 		this.w = w;
@@ -49,17 +46,13 @@ public class TileGrid implements Serializable{
 				grid.put(new int[]{x, y}, t);
 			}
 		}
-		
-		if(map == null){
-			map = new BufferedImage(width*tileSize, height*tileSize, BufferedImage.TYPE_INT_ARGB);
-		}
 	}
 	
 	public Tile getTile(int x, int y){
 		return grid.get(new int[]{x, y});
 	}
 	
-	public void paint(Graphics2D g){
-		
+	BufferedImage createImage(){
+		return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 	}
 }
