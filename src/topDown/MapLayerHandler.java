@@ -2,6 +2,7 @@ package topDown;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.Serializable;
 
 import engine.Window;
@@ -22,15 +23,19 @@ public class MapLayerHandler implements Serializable{
 		layer = new TileGrid(w);
 	}
 	
-	public MapLayerHandler(Window w, int s){
-		size = s;
+	public MapLayerHandler(Window w, int imgSize){
+		size = imgSize;
 		this.w = w;
 		layer = new TileGrid(w);
 	}
 	
 	public MapLayerHandler getMap(String filename){
-		layer.newMap(filename);
-		return this;
+		if(new File(getClass().getClassLoader().getResource(filename).getFile()).exists()){
+			layer.newMap(filename);
+			System.err.println("File "+filename+" not found at MapLayerHandler");
+			return this;
+		}
+		return null;
 	}
 	
 	public void paint(Graphics2D g){
