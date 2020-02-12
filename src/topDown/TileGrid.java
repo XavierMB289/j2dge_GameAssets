@@ -17,12 +17,15 @@ public class TileGrid implements Serializable{
 	int width, height;
 	int tileSize;
 	
+	private String mapName;
+	
 	public TileGrid(Window w){
 		this.w = w;
 	}
 	
 	public void newMap(String f){
 		grid = new HashMap<>();
+		mapName = f;
 		ArrayList<String> lines = w.FileH.readFromFile(f);
 		int wid = Integer.parseInt(lines.get(0).split("/")[0]);
 		width = wid;
@@ -52,7 +55,11 @@ public class TileGrid implements Serializable{
 		return grid.get(new int[]{x, y});
 	}
 	
-	BufferedImage createImage(){
+	public BufferedImage createImage(){
 		return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+	}
+	
+	public String getMapName(){
+		return mapName;
 	}
 }

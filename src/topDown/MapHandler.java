@@ -64,6 +64,10 @@ public class MapHandler {
 		headingDown = b;
 	}
 	
+	public void setTransparency(float t){
+		transparency = t;
+	}
+	
 	public void paint(Graphics2D g){
 		
 		//Just for sanity's sake
@@ -85,6 +89,35 @@ public class MapHandler {
 		under.update();
 		current.update();
 		over.update();
+	}
+	
+	//Methods for animations...
+	public Tile getTile(int x, int y, String map){
+		if(under.layer.getMapName().equals(map)){
+			return under.layer.getTile(x, y);
+		}
+		if(current.layer.getMapName().equals(map)){
+			return current.layer.getTile(x, y);
+		}
+		if(over.layer.getMapName().equals(map)){
+			return over.layer.getTile(x, y);
+		}
+		return null;
+	}
+	
+	public void setTileImage(String img, String map, int x, int y){
+		if(under.layer.getMapName().equals(map)){
+			under.layer.grid.get(new int[]{x,y}).image = w.ImageH.getImage(img);
+			return;
+		}
+		if(current.layer.getMapName().equals(map)){
+			current.layer.grid.get(new int[]{x,y}).image = w.ImageH.getImage(img);
+			return;
+		}
+		if(over.layer.getMapName().equals(map)){
+			over.layer.grid.get(new int[]{x,y}).image = w.ImageH.getImage(img);
+			return;
+		}
 	}
 	
 }
