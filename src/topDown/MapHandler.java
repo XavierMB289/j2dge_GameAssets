@@ -1,5 +1,8 @@
 package topDown;
 
+import java.awt.AlphaComposite;
+import java.awt.Graphics2D;
+
 import engine.Window;
 
 public class MapHandler {
@@ -12,6 +15,9 @@ public class MapHandler {
 	MapLayerHandler under;
 	MapLayerHandler current;
 	MapLayerHandler over;
+	
+	private float transparency = 0f;
+	private boolean headingDown = false;
 	
 	int currentLevel = 0;
 	String baseFilename;
@@ -52,6 +58,33 @@ public class MapHandler {
 			current = under;
 			under = under.getMap(baseFilename+"_"+(currentLevel-1));
 		}
+	}
+	
+	public void headingDown(boolean b){
+		headingDown = b;
+	}
+	
+	public void paint(Graphics2D g){
+		
+		//Just for sanity's sake
+		float opacity = Math.min(Math.max(0, transparency), 1);
+		
+		if(!headingDown){
+			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+			under.paint(g);
+		}
+		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1-opacity));
+		current.paint(g);
+		if(headingDown){
+			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+			over.paint(g);
+		}
+	}
+	
+	public void update(){
+		under.update();
+		current.update();
+		over.update();
 	}
 	
 }
