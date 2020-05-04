@@ -1,67 +1,56 @@
 package topDown;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 
 import javax.swing.ImageIcon;
 
+import backends.Vector2D;
+
 public class Tile {
 	
 	protected ImageIcon image;
-	protected int gridX, gridY;
-	protected Rectangle rect;
-	protected float alpha;
-	protected int type;
 	
-	public static final int FLOOR = 1;
-	public static final int WALL = 2;
-	public static final int MOVEABLE = 3;
+	protected Vector2D coords;
 	
-	public void setImage(ImageIcon i){
+	protected Rectangle rect = null;
+	
+	public Tile(ImageIcon i){
 		image = i;
+		coords = new Vector2D();
+	}
+	
+	public Tile setImage(ImageIcon i){
+		image = i;
+		return this;
 	}
 	
 	public Image getImage(){
 		return image.getImage();
 	}
 	
-	public void setGridXY(int gx, int gy){
-		gridX = gx;
-		gridY = gy;
+	public void setCoords(int x, int y){
+		coords.set(x, y);
 	}
 	
-	public void resetRect(int x, int y){
-		if(image != null){
-			rect = new Rectangle(x, y, image.getIconWidth(), image.getIconHeight());
+	public Rectangle changeRect(int x, int y){
+		rect.setLocation((int)coords.x+x, (int)coords.y+y);
+		return getRect();
+	}
+	
+	public int width(){
+		return image.getIconWidth();
+	}
+	
+	public int height(){
+		return image.getIconHeight();
+	}
+	
+	public Rectangle getRect(){
+		if(rect == null){
+			rect = new Rectangle((int)coords.x, (int)coords.y-height()/2, width(), height());
 		}
-	}
-	
-	public void setAlpha(float a){
-		alpha = a;
-	}
-	
-	public void setType(int t){
-		type = t;
-	}
-	
-	public void paint(Graphics2D g){
-		if(alpha > 0 || type == MOVEABLE){
-			AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
-			AlphaComposite orig = (AlphaComposite) g.getComposite();
-			g.setComposite(alcom);
-			g.drawImage(image.getImage(), rect.x, rect.y, null);
-			g.setComposite(orig);
-		}else{
-			g.setColor(Color.black);
-			g.fillRect(rect.x, rect.y, rect.width, rect.height);
-		}
-	}
-	
-	public boolean containsRect(Rectangle r){
-		return rect.intersects(r);
+		return rect;
 	}
 	
 }

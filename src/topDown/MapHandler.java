@@ -1,123 +1,108 @@
 package topDown;
 
-import java.awt.AlphaComposite;
-import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
+import backends.Vector2D;
 import engine.Window;
 
 public class MapHandler {
 	
 	Window w;
 	
-	public static final int STATUS_UP = 1;
-	public static final int STATUS_DOWN = -1;
+	TileGrid floor;
+	TileGrid walls;
+	TileGrid front;
 	
-	MapLayerHandler under;
-	MapLayerHandler current;
-	MapLayerHandler over;
+	int[] mapSize;
 	
-	private float transparency = 0f;
-	private boolean headingDown = false;
+	private int scale;
 	
-	int currentLevel = 0;
-	String baseFilename;
-	boolean mapChanging = false;
+	private ArrayList<Rectangle> rects = null;
 	
-	public MapHandler(Window w){
-		this.w = w;
-	}
-	
-	public MapHandler(Window w, String name){
-		this.w = w;
-		setFilename(name);
-	}
-	
-	public void setFilename(String basicName){
-		baseFilename = basicName;
-	}
-	
-	public void setupMap(){
-		setupMap(16);
-	}
-	
-	public void setupMap(int imgSize){
-		under = new MapLayerHandler(w, imgSize).getMap(baseFilename+"_"+(currentLevel-1));
-		current = new MapLayerHandler(w, imgSize).getMap(baseFilename+"_"+currentLevel);
-		over = new MapLayerHandler(w, imgSize).getMap(baseFilename+"_"+(currentLevel+1));
-	}
-	
-	public void rotateMaps(int status){
-		if(status == STATUS_UP){
-			currentLevel++;
-			under = current;
-			current = over;
-			over = over.getMap(baseFilename+"_"+(currentLevel+1));
-		}else if(status == STATUS_DOWN){
-			currentLevel--;
-			over = current;
-			current = under;
-			under = under.getMap(baseFilename+"_"+(currentLevel-1));
-		}
-	}
-	
-	public void headingDown(boolean b){
-		headingDown = b;
-	}
-	
-	public void setTransparency(float t){
-		transparency = t;
-	}
-	
-	public void paint(Graphics2D g){
+	public MapHandler(Window w, String filepath){
 		
-		//Just for sanity's sake
-		float opacity = Math.min(Math.max(0, transparency), 1);
+		this.w = w;
 		
-		if(!headingDown){
-			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-			under.paint(g);
-		}
-		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1-opacity));
-		current.paint(g);
-		if(headingDown){
-			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-			over.paint(g);
-		}
+		floor = createGrid(filepath+"_floor.txt");
+		walls = createGrid(filepath+"_wall.txt");
+		front = createGrid(filepath+"_frontWall.txt");
+		
 	}
 	
-	public void update(){
-		under.update();
-		current.update();
-		over.update();
+	public TileGrid createGrid(String filepath){
+		
+		TileGrid ret;
+		
+		ArrayList<String> file = w.FileH.readArrayFromFile(filepath);
+		String[] mS = file.get(0).split("/");
+		mapSize = new int[]{Integer.parseInt(mS[0]), Integer.parseInt(mS[1])};
+		ret = new TileGrid(w, mapSize[0], mapSize[1]);
+		
+		String[] map = new String[mapSize[1]];
+		for(int i = 2; i < mapSize[1]+2; i++){
+			map[i-2] = file.get(i);
+		}
+		
+		Map<String, String> ids = new HashMap<>();
+		for(int i = mapSize[1]+2; i < file.size(); i++){
+			String[] id = file.get(i).split("=");
+			ids.put(id[0], id[1]);
+		}
+		
+		String[] temp = file.get(1).split("/");
+		scale = Integer.parseInt(temp[1]);
+		ret.setScale(scale);
+		
+		ret.addIDs(ids);
+		ret.setupMap(map);
+		
+		ret.createMap(Integer.parseInt(temp[0]));
+		
+		return ret;
 	}
 	
-	//Methods for animations...
-	public Tile getTile(int x, int y, String map){
-		if(under.layer.getMapName().equals(map)){
-			return under.layer.getTile(x, y);
+	public boolean onFloor(Vector2D v){
+		if(rects == null){
+			rects = floor.getBounds();
 		}
-		if(current.layer.getMapName().equals(map)){
-			return current.layer.getTile(x, y);
+		
+		Point p = new Point((int)v.x, (int)v.y);
+		
+		for(Rectangle r : rects){
+			if(r.contains(p)){
+				return true;
+			}
 		}
-		if(over.layer.getMapName().equals(map)){
-			return over.layer.getTile(x, y);
-		}
-		return null;
+		return false;
 	}
 	
-	public void setTileImage(String img, String map, int x, int y){
-		if(under.layer.getMapName().equals(map)){
-			under.layer.grid.get(new int[]{x,y}).image = w.ImageH.getImage(img);
-			return;
-		}
-		if(current.layer.getMapName().equals(map)){
-			current.layer.grid.get(new int[]{x,y}).image = w.ImageH.getImage(img);
-			return;
-		}
-		if(over.layer.getMapName().equals(map)){
-			over.layer.grid.get(new int[]{x,y}).image = w.ImageH.getImage(img);
-			return;
-		}
+	public void changeBounds(int x, int y){
+		rects = floor.changeRects(x, y);
+	}
+	
+	public ArrayList<Rectangle> getRects(){
+		return rects;
+	}
+	
+	public int getScale(){
+		return scale;
+	}
+	
+	public BufferedImage getFloor(){
+		return floor.getMap();
+	}
+	
+	public BufferedImage getWalls(){
+		return walls.getMap();
+	}
+	
+	public BufferedImage getFront(){
+		return front.getMap();
 	}
 	
 }
